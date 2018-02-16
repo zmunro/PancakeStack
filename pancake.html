@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<script src="priority-queue.js"></script>
+
+<script>
+	//sums the distance each pancake is away from desired index
+	function heuristic(cakes) {
+		sum = 0;
+		for(i = 0; i < 5; i++) {
+			sum = sum + Math.abs((5 - i) - cakes[i]); 
+		}
+		return sum;
+	}
+
+	function flip(node, height) {
+		cakes = node.cakes.slice();
+		// height to flip can be 0, 1, 2, 3
+		// 	spatula goes under cake at index = height
+		if (height == 0) {
+			cakes[0] = [cakes[4], cakes[4] = cakes[0]][0];
+			cakes[1] = [cakes[3], cakes[3] = cakes[1]][0];
+		}
+		if (height == 1) {
+			cakes[1] = [cakes[4], cakes[4] = cakes[1]][0];
+			cakes[2] = [cakes[3], cakes[3] = cakes[2]][0];	
+		}
+		if (height == 2) {
+			cakes[2] = [cakes[4], cakes[4] = cakes[2]][0];
+		}
+		else {
+			cakes[3] = [cakes[4], cakes[4] = cakes[3]][0];
+		}
+		new_node = {};
+		new_node.cakes = cakes.slice();
+		new_node.parent = node;
+		new_node.flipped_cakes = node.flipped_cakes + 5 - height; 
+		return new_node; 
+	}
+
+	// hard coded to handle only a stack of 5 pancakes at the moments
+	function aStarPancakes() {
+		var queue = new PriorityQueue({ 
+			comparator: function(a, b) { 
+				b_value = heuristic_B(b.cakes) + b.flipped_cakes;
+				a_value = heuristic_B(a.cakes) + a.flipped_cakes;
+				return a_value - b_value; 
+			}
+		});
+
+		goal = [5, 4, 3, 2, 1];
+
+		//A Random start state for the pancakes that I came up with, feel free to change
+		var start = {
+			flipped_cakes: 0,
+			cakes: [3, 2, 5, 4, 1],
+			parent: [0, 0, 0, 0, 0]
+		};
+
+		queue.queue(start);
+		while(queue.length != 0) {
+			var node = queue.dequeue();	
+
+			//find all children of node, a.k.a flip at each level
+			for(var i = 0; i < 4; i++) {
+				var new_node = flip(node, i);
+				//checks to see if pancakes are in right order
+				if (heuristic_B(new_node.cakes) == 0) {
+					console.log("FOUND GOAL");
+					console.log(new_node.flipped_cakes +": " + new_node.cakes);
+					return;
+				}
+				queue.queue(new_node);
+			}
+		}
+	}
+
+
+</script>
+<body>
+<button style="width:50px; height:30px" onclick="aStarPancakes()"></button>
+</body>
+
+</html>
